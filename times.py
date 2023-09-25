@@ -4,8 +4,6 @@ import time
 
 from datas import *
 from datetime import datetime
-with tbase:
-    s = tc.execute('SELECT userid,safety_balance FROM settings').fetchall()
 
 
 
@@ -22,6 +20,9 @@ def funcs():
 
 
             
+            
+            
+           
             try:
                 state_times(useri=int(i[0]))
             except:
@@ -37,7 +38,7 @@ def funcs_5():
         for i in s:
             dates_ = datetime.strptime(i[1], '%Y-%m-%d %H:%M')
             if dates >= dates_:
-                print('y')
+        
                 state_times_safety(useri=int(i[0]))
 
     except:

@@ -263,7 +263,7 @@ async def state_picture_5(msg: types.Message, state: FSMContext):
             
             
             await state.finish()
-            await msg.answer_photo(photo=await softstexts(promts=msg.text,safety=safetys[0], scale=scales[0]))
+            await msg.answer_photo(photo=await softstexts(promts=msg.text,safety=safetys[0], scale=scales[0]),reply_markup=wel_5())
             if s_[0] != 0:
                 state_tryttttt(userid=msg.from_user.id)
             elif s[0] != 0 and s_[0] == 0:
@@ -377,7 +377,7 @@ async def state_get_promts(msg: types.Message, state: FSMContext):
         
                 await state.finish()
                 
-                await msg.answer_photo(await softs_5(init=inits, promts=data['promts_'], scale=scales[0], safety=s_5[0]))
+                await msg.answer_photo(await softs_5(init=inits, promts=data['promts_'], scale=scales[0], safety=s_5[0]),reply_markup=wel_5())
                 
                 
                 
