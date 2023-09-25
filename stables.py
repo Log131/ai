@@ -70,7 +70,7 @@ async def softs_5(init, promts, scale, safety):
 
     result = json.loads(res.text)
     
-    print(result)
+    
     
     if result.get('status') == 'processing':
         time.sleep(18)
@@ -141,7 +141,7 @@ async def softstexts(promts,safety,scale):
     result = json.loads(res.text)
     
     
-    print(result)
+    
     if result.get('status') == 'processing':
         time.sleep(18)
         res_ = requests.post(f'{result.get("fetch_result")}',headers=headers, data=datas)
