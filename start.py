@@ -14,13 +14,6 @@ from datetime import datetime, timedelta
 
 import random
 
-with tbase:
-    tc.execute('CREATE TABLE IF NOT EXISTS users(userid PRIMARY KEY,balance DEFAULT 0, try_text_balance DEFAULT 3,balance_99 DEFAULT 1, try_pic_balance DEFAULT 1,nudify_content DEFAULT 0, try_balance DEFAULT 0)')
-    tc.execute('CREATE TABLE IF NOT EXISTS targets(msgids,rands)')
-    
-    tc.execute('CREATE TABLE IF NOT EXISTS settings(userid PRIMARY KEY,scale REAL DEFAULT 7.5,safety_balance INTEGER DEFAULT 0,date, safety)')
-
-
 
 
 
@@ -36,10 +29,19 @@ dp = Dispatcher(bot=bot, storage=MemoryStorage())
 @dp.message_handler(commands=['start'])
 async def state_starts(msg: types.Message):
     photos = 'https://imgv3.fotor.com/images/side/create-various-types-of-random-image-using-fotor-random-image-generator.jpg'
-    state_0(userid=msg.from_user.id, balance=0)
-    state_5(userid=msg.from_user.id,scale=7.5, safety='yes', safety_balance=0, date='0')
+    await state_0(userid=msg.from_user.id, balance=0)
+    await state_5(userid=msg.from_user.id,scale=7.5, safety='yes', safety_balance=0, date='0')
     await msg.answer_photo(photo=photos,caption='Наш канал - @kaif_Ai', reply_markup=wel_5())
-    
+    try:
+        async with aiosqlite.connect('vis.db') as tc:
+            await tc.commit()
+            async with tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (msg.from_user.id,)) as s:
+                nudify = await s.fetchone()
+
+        if nudify[0] != 0:
+            await msg.answer('Вам доступен 18+ контент', reply_markup=nudity_())
+    except Exception as e:
+        print(e)
 
 
     
@@ -58,8 +60,10 @@ async def stateSettings(css: types.CallbackQuery):
 
     await css.answer()
     try:
-        with tbase:
-            nudify = tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (css.from_user.id,)).fetchone()
+        async with aiosqlite.connect('vis.db') as tc:
+            await tc.commit()
+            async with tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (css.from_user.id,)) as s:
+                nudify = await s.fetchone()
         await css.message.delete()
 
         if nudify[0] != 0:
@@ -115,8 +119,10 @@ async def tudity_(css: types.CallbackQuery, state: FSMContext):
     await css.message.delete()
     
     
-    with tbase:
-        s = tc.execute('SELECT nudify_content FROM users WHERE userid = ?',(css.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT nudify_content FROM users WHERE userid = ?',(css.from_user.id,)) as r:
+            s = await r.fetchone()
     
     
     
@@ -125,7 +131,7 @@ async def tudity_(css: types.CallbackQuery, state: FSMContext):
     
     if s[0] != 0:
         
-        await css.message.answer('Напишите PROMT пример(girl,naked,pussy)',reply_markup=otmena_5())
+        await css.message.answer('Напишите Запрос пример(girl,naked,pussy)',reply_markup=otmena_5())
 
         await nudes_img_states.promts_0.set()
 
@@ -133,15 +139,17 @@ async def tudity_(css: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=nudes_img_states.promts_0)
 async def tudity_5(msg: types.Message, state: FSMContext):
-    with tbase:
-        scales = tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)) as s:
+            scales = await s.fetchone()
 
 
     try:
         await msg.answer('Генерируется подождите')
         await state.finish()
-        await msg.answer_photo(photo=await softstexts(promts=msg.text,safety='no',scale=scales))
-        state_nudify_(useri=msg.from_user.id)
+        await msg.answer_photo(photo=await softstexts(promts=msg.text,safety='no',scale=scales[0]))
+        await state_nudify_(useri=msg.from_user.id)
     except Exception as e:
         print(e)
         await state.finish()
@@ -160,11 +168,13 @@ async def rands(css: types.CallbackQuery, state: FSMContext):
     await css.answer()
     await css.message.delete()
     
-    with tbase:
-        s = tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (css.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (css.from_user.id,)) as r:
+            s = await r.fetchone()
     
     if s[0] != 0:
-        await css.message.answer('Введите PROMT пример(girl,naked,pussy)',reply_markup=otmena_____())
+        await css.message.answer('Введите Запрос пример(girl,naked,pussy)',reply_markup=otmena_____())
         await nudes_pic_states.promts_555.set()
 
 
@@ -189,8 +199,10 @@ async def rands_(msg: types.Message, state: FSMContext):
 @dp.message_handler(state=nudes_pic_states.promts, content_types=types.ContentType.PHOTO)
 async def rands_states(msg: types.Message, state: FSMContext):
     await msg.delete()
-    with tbase:
-        scales = tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)) as r:
+            scales = await r.fetchone()
     async with state.proxy() as data:
         try:
             t = '6573671049:AAEEjlb_kT9prPzOB35cGvl1dXo_JkRO_Vo'
@@ -198,8 +210,8 @@ async def rands_states(msg: types.Message, state: FSMContext):
             inits = f'https://api.telegram.org/file/bot{t}/{s.file_path}'
             await msg.answer('Генерируется подождите')
             await state.finish()
-            await msg.answer_photo(photo=await softs_5(init=inits, promts=data['promts_555'], scale=scales,safety='no'))
-            state_nudify_(useri=msg.from_user.id)
+            await msg.answer_photo(photo=await softs_5(init=inits, promts=data['promts_555'], scale=scales[0],safety='no'))
+            await state_nudify_(useri=msg.from_user.id)
         except Exception as e:
             print(e)
 
@@ -219,19 +231,24 @@ async def state_picture(css: types.CallbackQuery, state: FSMContext):
     await css.answer()
     
     await css.message.delete()
-    with tbase:
-        s_texts = tc.execute('SELECT try_text_balance FROM users WHERE userid = ?', (css.from_user.id,)).fetchone()
-        s = tc.execute('SELECT try_balance FROM users WHERE userid = ?', (css.from_user.id,)).fetchone()
-        s_ = tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT try_text_balance FROM users WHERE userid = ?', (css.from_user.id,)) as s0:
+            s_texts = await s0.fetchone()
+        async with tc.execute('SELECT try_balance FROM users WHERE userid = ?', (css.from_user.id,)) as s5:
+            s = await s5.fetchone()
+        async with await tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)) as s9:
+            s_ = await s9.fetchone()
+
     if s[0] > 0:
-        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ PROMT пример(woman,smile,happy)',reply_markup=otmena_())
+        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ Запрос пример(woman,smile,happy)',reply_markup=otmena_())
         await picture_states.promts_5.set()
     elif s[0] > 0 and s_[0] != 0:
-        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ PROMT пример(woman,smile,happy)',reply_markup=otmena_())
+        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ Запрос пример(woman,smile,happy)',reply_markup=otmena_())
         await picture_states.promts_5.set()
     else:
         if s_texts[0] != 0:
-            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ PROMT пример(woman,smile,happy)',reply_markup=otmena_())
+            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ Запрос пример(woman,smile,happy)',reply_markup=otmena_())
             await picture_states.promts_5.set()
         else:
             await css.message.answer('Слишком много запросов попробуйте чуть позже 🙃')
@@ -247,29 +264,33 @@ async def state_picture_5(msg: types.Message, state: FSMContext):
 
     
     else:
-        with tbase:
-            s_ = tc.execute('SELECT try_text_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
-            s = tc.execute('SELECT try_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
+        async with aiosqlite.connect('vis.db') as tc:
+            await tc.commit()
+            async with tc.execute('SELECT try_text_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r:
+                s_ = await r.fetchone()
+            async with tc.execute('SELECT try_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r_:
+                s = await r_.fetchone()
         
             
         
         
         try:
-            await msg.answer('`Генерируется` подождите  \n \n \n (при некоторых случаях `ИИ` может сгенерировать `18+` контент если видите темное фото это значит что это `18+` контент вы можете включить функцию `18+` в настройках', parse_mode='Markdown')
-            with tbase:
-                scales = tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
-            
-                safetys = tc.execute('SELECT safety FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
+            await msg.answer('`Генерируется` подождите  \n \n \n (при некоторых случаях `ИИ` может сгенерировать `18+` контент если видите темное фото это значит что это `18+` контент вы можете включить функцию `18+` в настройках)', parse_mode='Markdown')
+            async with aiosqlite.connect('vis.db') as tc:
+                async with tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)) as r_5:
+                    scales = await r_5.fetchone()
+                async with tc.execute('SELECT safety FROM settings WHERE userid = ?', (msg.from_user.id,)) as r_6:
+                    safetys = await r_6.fetchone()
             
             
             await state.finish()
             await msg.answer_photo(photo=await softstexts(promts=msg.text,safety=safetys[0], scale=scales[0]),reply_markup=wel_5())
             if s_[0] != 0:
-                state_tryttttt(userid=msg.from_user.id)
+                await state_tryttttt(userid=msg.from_user.id)
             elif s[0] != 0 and s_[0] == 0:
-                state_tryttttt_(userid=msg.from_user.id)
+                await state_tryttttt_(userid=msg.from_user.id)
             if safetys[0] == 'no':
-                state_nudify_(useri=msg.from_user.id)
+                await state_nudify_(useri=msg.from_user.id)
         except Exception as e:
             print(e)
             await state.finish()
@@ -287,21 +308,26 @@ async def state_content(css: types.CallbackQuery, state: FSMContext):
     try:
         await css.answer()
         await css.message.delete()
-        with tbase:
-            s_555 = tc.execute('SELECT try_balance FROM users WHERE userid = ?', (css.from_user.id,)).fetchone()
-            s = tc.execute('SELECT try_pic_balance FROM users WHERE userid = ?', (css.from_user.id,)).fetchone()
-            s_ = tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)).fetchone()
+        async with aiosqlite.connect('vis.db') as tc:
+            await tc.commit()
+            async with tc.execute('SELECT try_balance FROM users WHERE userid = ?', (css.from_user.id,)) as r:
+                s_555 = await r.fetchone()
+            
+            async with tc.execute('SELECT try_pic_balance FROM users WHERE userid = ?', (css.from_user.id,)) as r_:
+                s = await r_.fetchone()
+            async with tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)) as r_5:
+                s_ = await r_5.fetchone()
         if s[0] > 0:
-            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ PROMT пример(woman,smile,happy)', reply_markup=otmena())
+            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ Запрос пример(woman,smile,happy)', reply_markup=otmena())
             
             await photo_states.promts_.set()
         elif s[0] > 0 and s_[0] != 0:
-            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ PROMT пример(woman,smile,happy)', reply_markup=otmena())
+            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ Запрос пример(woman,smile,happy)', reply_markup=otmena())
             
             await photo_states.promts_.set()
         else:
             if s_555[0] != 0:
-                await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ PROMT пример(woman,smile,happy)', reply_markup=otmena())
+                await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ Запрос пример(woman,smile,happy)', reply_markup=otmena())
             
                 await photo_states.promts_.set()
             else:
@@ -353,17 +379,26 @@ async def state_get_photo(msg: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=photo_states.photos_, content_types=[types.ContentType.TEXT, types.ContentType.PHOTO])
-async def state_get_promts(msg: types.Message, state: FSMContext):
+async def state_get_5(msg: types.Message, state: FSMContext):
     if msg.content_type == types.ContentType.TEXT:
         await state.finish()
         await msg.answer('Вы не отправили фото попробуйте заного', reply_markup=wel_5())
     else:
         try:
-            with tbase:
-                s_555 = tc.execute('SELECT try_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
-                s_pic = tc.execute('SELECT try_pic_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
-                s_5 = tc.execute('SELECT safety FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
-                scales = tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
+            async with aiosqlite.connect('vis.db') as tc:
+                await tc.commit()
+                async with tc.execute('SELECT try_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r:
+                    s_555 = await r.fetchone()
+                async with tc.execute('SELECT try_pic_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r_:
+                    s_pic = await r_.fetchone()
+                async with tc.execute('SELECT safety FROM settings WHERE userid = ?', (msg.from_user.id,)) as r_0:
+
+
+
+
+                    s_5 = await r_0.fetchone()
+                async with tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)) as r_000:
+                    scales = await r_000.fetchone()
             t = '6573671049:AAEEjlb_kT9prPzOB35cGvl1dXo_JkRO_Vo'
             s = await bot.get_file(msg.photo[-1].file_id)
             inits = f'https://api.telegram.org/file/bot{t}/{s.file_path}'
@@ -372,7 +407,7 @@ async def state_get_promts(msg: types.Message, state: FSMContext):
             
             
             async with state.proxy() as data:
-                await msg.answer('`Генерируется` подождите  \n \n \n (при некоторых случаях `ИИ` может сгенерировать `18+` контент если видите темное фото это значит что это `18+` контент вы можете включить функцию `18+` в настройках', parse_mode='Markdown')
+                await msg.answer('`Генерируется` подождите  \n \n \n (при некоторых случаях `ИИ` может сгенерировать `18+` контент если видите темное фото это значит что это `18+` контент вы можете включить функцию `18+` в настройках)', parse_mode='Markdown')
         
         
                 await state.finish()
@@ -388,11 +423,11 @@ async def state_get_promts(msg: types.Message, state: FSMContext):
                 
                 
                 if s_pic[0] != 0:
-                    state_pic_balance(userid=msg.from_user.id)
+                    await state_pic_balance(userid=msg.from_user.id)
                 elif s_pic[0] == 0 and s_555[0] != 0:
-                    state_tryttttt_(userid=msg.from_user.id)
+                    await state_tryttttt_(userid=msg.from_user.id)
                 if s_5[0] == 'no':
-                    state_nudify_(useri=msg.from_user.id)
+                    await state_nudify_(useri=msg.from_user.id)
                 
         except Exception as e:
         
@@ -405,43 +440,49 @@ async def state_get_promts(msg: types.Message, state: FSMContext):
 
 @dp.message_handler(text='Профиль 🆔')
 async def state_profile(msg: types.Message):
-    with tbase:
-        nudify = tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
-        s = tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
-        
-        s_pic = tc.execute('SELECT try_pic_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
 
-        s_____ = tc.execute('SELECT try_text_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
-        s______ = tc.execute('SELECT try_balance FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
+
+
+
+        async with tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (msg.from_user.id,)) as r:
+            nudify = await r.fetchone()
+        async with tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (msg.from_user.id,)) as r_:
+            s = await r_.fetchone()
+        async with tc.execute('SELECT try_pic_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r_5:
+            s_pic = await r_5.fetchone()
+        async with tc.execute('SELECT try_text_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r_0:
+            s_____ = await r_0.fetchone()
+        async with tc.execute('SELECT try_balance FROM users WHERE userid = ?', (msg.from_user.id,)) as r0:
+            s______ = await r0.fetchone()
 
         
     
-    if s[0] == 0:
-        await msg.answer(f'Ваш 🆔 : {msg.from_user.id} \n \n Генераций(TextToImage) - `{s_____[0]}` \n Генераций(imgToimg) - `{s_pic[0]}` \n Генераций 18+ контента - `{nudify[0]}` \n Подписка : Недоступна \n ', parse_mode='Markdown')
-    elif s[0] == 1:
-        with tbase:
-            nudify = tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
-            s_ = tc.execute('SELECT date FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
+        if s[0] == 0:
+            await msg.answer(f'Ваш 🆔 : {msg.from_user.id} \n \n Генераций(TextToImage) - `{s_____[0]}` \n Генераций(imgToimg) - `{s_pic[0]}` \n Генераций 18+ контента - `{nudify[0]}` \n Подписка : Недоступна \n ', parse_mode='Markdown')
+        elif s[0] == 1:
+            async with tc.execute('SELECT nudify_content FROM users WHERE userid = ?', (msg.from_user.id,)) as r000:
+                nudify = await r000.fetchone()
+            async with tc.execute('SELECT date FROM settings WHERE userid = ?', (msg.from_user.id,)) as r00000:
+                s_ = await r00000.fetchone()
         
-        tir = datetime.strptime(s_[0], '%Y-%m-%d %H:%M')
-        dates = datetime.now()
-        f = tir - dates
-        await msg.answer(f'Ваш 🆔 : {msg.from_user.id} \n \n Генераций по подписке (обновляется каждый день) - `{s______[0]}` \n Генераций(TextToImage) - `{s_____[0]}` \n Генераций(imgToimg) - `{s_pic[0]}` \nГенераций 18+ контента - `{nudify[0]}` \n Подписка : `{f}` ', parse_mode='Markdown')
-    else:
-        pass
+            tir = datetime.strptime(s_[0], '%Y-%m-%d %H:%M')
+            dates = datetime.now()
+            f = tir - dates
+            await msg.answer(f'Ваш 🆔 : {msg.from_user.id} \n \n Генераций по подписке (обновляется каждый день) - `{s______[0]}` \n Генераций(TextToImage) - `{s_____[0]}` \n Генераций(imgToimg) - `{s_pic[0]}` \nГенераций 18+ контента - `{nudify[0]}` \n Подписка : `{f}` ', parse_mode='Markdown')
+        else:
+            pass
 
 
 
 
 @dp.message_handler(text='Настройки ☣️')
 async def states_555(msg: types.Message):
-
-
-
-
-
-    with tbase:
-        s_ = tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT scale FROM settings WHERE userid = ?', (msg.from_user.id,)) as r:
+            s_ = await r.fetchone()
     row = InlineKeyboardMarkup()
     rows = InlineKeyboardButton(text=f'Увеличить scale + 0.5', callback_data=f'scaleupt_{msg.from_user.id}')
     rows_ = InlineKeyboardButton(text=f'Уменьшить scale - 0.5', callback_data=f'scaledow_{msg.from_user.id}')
@@ -458,9 +499,11 @@ async def state_665(css: types.CallbackQuery):
     await css.message.delete()
     ans = css.data.split('_')
     if ans[0] == 'scaleupt':
-        state_6(userid=css.from_user.id)
-        with tbase:
-            s_ = tc.execute('SELECT scale FROM settings WHERE userid = ?', (css.from_user.id,)).fetchone()
+        await state_6(userid=css.from_user.id)
+        async with aiosqlite.connect('vis.db') as tc:
+            await tc.commit()
+            async with tc.execute('SELECT scale FROM settings WHERE userid = ?', (css.from_user.id,)) as r:
+                s_ = await r.fetchone()
         row = InlineKeyboardMarkup()
         rows = InlineKeyboardButton(text=f'Увеличить scale + 0.5', callback_data=f'scaleupt_{css.from_user.id}')
         rows_ = InlineKeyboardButton(text=f'Уменьшить scale - 0.5', callback_data=f'scaledow_{css.from_user.id}')
@@ -468,9 +511,11 @@ async def state_665(css: types.CallbackQuery):
         await css.message.answer(f'Ваши настройки : \n \n \n `guidance_scale` : {s_[0]} \n (Влияет на ваши запросы Рекомендуется 7.5)', reply_markup=row, parse_mode='Markdown')
     
     elif ans[0] == 'scaledow':
-        state_666(userid=css.from_user.id)
-        with tbase:
-            s_ = tc.execute('SELECT scale,safety FROM settings WHERE userid = ?', (css.from_user.id,)).fetchone()
+        await state_666(userid=css.from_user.id)
+        async with aiosqlite.connect('vis.db') as tc:
+            await tc.commit()
+            async with tc.execute('SELECT scale,safety FROM settings WHERE userid = ?', (css.from_user.id,)) as r_:
+                s_ = await r_.fetchone()
         
         row = InlineKeyboardMarkup()
         rows = InlineKeyboardButton(text=f'Увеличить scale + 0.5', callback_data=f'scaleupt_{css.from_user.id}')
@@ -491,8 +536,10 @@ async def state_665(css: types.CallbackQuery):
 
 @dp.message_handler(text='Купить подписку')
 async def state_555(msg: types.Message):
-    with tbase:
-        s = tc.execute('SELECT balance_99 FROM users WHERE userid = ?', (msg.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT balance_99 FROM users WHERE userid = ?', (msg.from_user.id,)) as r:
+            s = await r.fetchone()
     
     if s[0] != 0:
 
@@ -506,9 +553,10 @@ async def state_555(msg: types.Message):
 
 @dp.callback_query_handler(text_contains='getit')
 async def state_fffff(css: types.CallbackQuery):
-    with tbase:
-        
-        s_ = tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)) as r:
+            s_ = await r.fetchone()
     
     s = css.data.split('_')
     await css.answer()
@@ -543,7 +591,7 @@ async def state_srs(css: types.CallbackQuery):
     s = css.data.split('_')
     s_ = await bot.send_message(chat_id=-1001980460031, text=f'Покупатель - @{css.from_user.username} \n Оплатил - {s[1]}р \n Комментарий - {s[2]} \n Подписка : {s[3]}',reply_markup=accept_(userid=f'{s[1]}_{s[2]}_{s[3]}_{s[4]}'))
 
-    state_55555(msgids=s_.message_id,rands=s[2])   
+    await state_55555(msgids=s_.message_id,rands=s[2])   
 
 
 @dp.callback_query_handler(text_contains='accepts')
@@ -556,19 +604,21 @@ async def state_____(css: types.CallbackQuery):
     
     
     
-    with tbase:
-        f = tc.execute('SELECT msgids FROM targets WHERE rands = ?', (s[2],)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT msgids FROM targets WHERE rands = ?', (s[2],)) as r:
+            f = await r.fetchone()
     if s[3] == '1day':
 
         try:
-            state_times(useri=int(s[4]))
-            state_565(balance=int(s[1]), userid=int(s[4]))
+            await state_times(useri=int(s[4]))
+            await state_565(balance=int(s[1]), userid=int(s[4]))
             dates = (datetime.now() + timedelta(hours=23)).strftime('%Y-%m-%d %H:%M')
-            state_safets(date=dates,safety_balance=1, userid=int(s[4]))
+            await state_safets(date=dates,safety_balance=1, userid=int(s[4]))
             await bot.edit_message_text(text='Пользователю выдана подписка ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=s[4], text='Вам выдана подписка')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
@@ -580,14 +630,14 @@ async def state_____(css: types.CallbackQuery):
     elif s[3] == '3day':
 
         try:
-            state_times(useri=int(s[4]))
-            state_565(balance=int(s[1]), userid=int(s[4]))
+            await state_times(useri=int(s[4]))
+            await state_565(balance=int(s[1]), userid=int(s[4]))
             dates = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d %H:%M')
-            state_safets(date=dates,safety_balance=1, userid=int(s[4]))
+            await state_safets(date=dates,safety_balance=1, userid=int(s[4]))
             await bot.edit_message_text(text='Пользователю выдана подписка ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=s[4], text='Вам выдана подписка')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
@@ -598,14 +648,14 @@ async def state_____(css: types.CallbackQuery):
     elif s[3] == '7day':
 
         try:
-            state_times(useri=int(s[4]))
-            state_565(balance=int(s[1]), userid=int(s[4]))
+            await state_times(useri=int(s[4]))
+            await state_565(balance=int(s[1]), userid=int(s[4]))
             dates = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d %H:%M')
-            state_safets(date=dates,safety_balance=1, userid=int(s[4]))
+            await state_safets(date=dates,safety_balance=1, userid=int(s[4]))
             await bot.edit_message_text(text='Пользователю выдана подписка ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=s[4], text='Вам выдана подписка')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
@@ -617,14 +667,14 @@ async def state_____(css: types.CallbackQuery):
     elif s[3] == '1month':
 
         try:
-            state_times(useri=int(s[4]))
-            state_565(balance=int(s[1]), userid=int(s[4]))
+            await state_times(useri=int(s[4]))
+            await state_565(balance=int(s[1]), userid=int(s[4]))
             dates = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d %H:%M')
-            state_safets(date=dates,safety_balance=1, userid=int(s[4]))
+            await state_safets(date=dates,safety_balance=1, userid=int(s[4]))
             await bot.edit_message_text(text='Пользователю выдана подписка ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=s[4], text='Вам выдана подписка')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
@@ -635,28 +685,28 @@ async def state_____(css: types.CallbackQuery):
     
     elif s[3] == '18content':
         try:
-            state_nudify(useri=int(s[4]))
-            state_565(balance=int(s[1]), userid=int(s[4]))
+            await state_nudify(useri=int(s[4]))
+            await state_565(balance=int(s[1]), userid=int(s[4]))
 
             await bot.edit_message_text(text='Пользователю выдан 18+ режим ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=int(s[4]), text='18+ режим активирован Перейдите в настройки там сможете генерировать 18+ контент ❗️')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
             print(e)
     elif s[3] == '1day99':
         try:
-            state_times(useri=int(s[4]))
-            state_565(balance=int(s[1]), userid=int(s[4]))
-            state_balance_99(userid=int(s[4]))
+            await state_times(useri=int(s[4]))
+            await state_565(balance=int(s[1]), userid=int(s[4]))
+            await state_balance_99(userid=int(s[4]))
             dates = (datetime.now() + timedelta(hours=23)).strftime('%Y-%m-%d %H:%M')
-            state_safets(date=dates,safety_balance=1, userid=int(s[4]))
+            await state_safets(date=dates,safety_balance=1, userid=int(s[4]))
             await bot.edit_message_text(text='Пользователю выдана подписка ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=s[4], text='Вам выдана подписка')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
@@ -666,11 +716,11 @@ async def state_____(css: types.CallbackQuery):
                 pass
     elif s[3] == '15zaprosov':
         try:
-            state_15(userid=int(s[4]))
+            await state_15(userid=int(s[4]))
             await bot.edit_message_text(text='Пользователю выданы запросы ☑️', chat_id=-1001980460031,message_id=f[0])
             try:
                 await bot.send_message(chat_id=s[4], text='Вам выданы запросы')
-                state_deletes(rands=f[0])
+                await state_deletes(rands=f[0])
             except Exception as e:
                 print(e)
         except Exception as e:
@@ -683,8 +733,10 @@ async def state_____(css: types.CallbackQuery):
 @dp.callback_query_handler(text_contains='otmena_')
 async def fffff_(css: types.CallbackQuery):
     s = css.data.split('_')
-    with tbase:
-        r = tc.execute('SELECT msgids FROM targets WHERE rands = ?', (s[2],)).fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT msgids FROM targets WHERE rands = ?', (s[2],)) as f:
+            r = await f.fetchone()
     
     
 
@@ -694,7 +746,7 @@ async def fffff_(css: types.CallbackQuery):
     try:
         await bot.edit_message_text(text='Отменено', chat_id=-1001980460031, message_id=r[0])
         await bot.send_message(chat_id=s[4], text='Вашу оплату отклонили')
-        state_deletes(rands=r[0])
+        await state_deletes(rands=r[0])
     except Exception as e:
         print(e)
 
@@ -729,8 +781,10 @@ async def state_spams(css: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=spams_states.spams_)
 async def state_spams_(msg: types.Message, state: FSMContext):
-    with tbase:
-        s = tc.execute('SELECT userid FROM users').fetchall()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT userid FROM users') as r:
+            s = await r.fetchall()
     await msg.delete()
     for i in s:
         try:
@@ -753,12 +807,18 @@ async def state_spams_5(css: types.CallbackQuery, state: FSMContext):
 async def state_balances(css: types.CallbackQuery):
     
     await css.answer()
-    with tbase:
-        r = tc.execute('SELECT COUNT(userid) FROM users').fetchone()
-        s = tc.execute('SELECT SUM(balance) FROM users').fetchone()
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.commit()
+        async with tc.execute('SELECT COUNT(userid) FROM users') as f:
+            r = await f.fetchone()
+        async with tc.execute('SELECT SUM(balance) FROM users') as f_:
+            
+            s = await f_.fetchone()
 
     await css.message.answer(f'Профит - {s[0]}, \n Пользователей - {r[0]}')
 
 
 if __name__ == '__main__':
+    t = asyncio.get_event_loop()
+    t.run_until_complete(state_tbase())
     executor.start_polling(dp, skip_updates=True)

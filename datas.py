@@ -1,70 +1,33 @@
-import sqlite3
+import aiosqlite
 
+import asyncio
 
-
-tbase = sqlite3.connect('vis.db')
-tc = tbase.cursor()
-
-
-def state_0(userid,balance):
-    with tbase:
-        tc.execute('INSERT OR IGNORE INTO users(userid,balance) VALUES(?, ?)', (userid,balance,))
-
-
-
-
-def state_5(userid, scale, safety, safety_balance, date):
-    with tbase:
-        tc.execute('INSERT OR IGNORE INTO settings(userid, scale, safety, safety_balance, date) VALUES(?, ?, ?, ?, ?)', (userid,scale,safety,safety_balance,date,))
+async def state_tbase():
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('CREATE TABLE IF NOT EXISTS users(userid PRIMARY KEY,balance DEFAULT 0, try_text_balance DEFAULT 3,balance_99 DEFAULT 1, try_pic_balance DEFAULT 1,nudify_content DEFAULT 0, try_balance DEFAULT 0)')
+        await tc.execute('CREATE TABLE IF NOT EXISTS targets(msgids,rands)')
+        await tc.execute('CREATE TABLE IF NOT EXISTS settings(userid PRIMARY KEY,scale REAL DEFAULT 7.5,safety_balance INTEGER DEFAULT 0,date, safety)')
+        await tc.commit()
 
 
 
 
 
 
-def state_6(userid):
-    with tbase:
-        tc.execute('UPDATE settings SET scale = scale + 0.5 WHERE userid = ?', (userid,))
-
-def state_666(userid):
-    with tbase:
-        tc.execute('UPDATE settings SET scale = scale - 0.5 WHERE userid = ?', (userid,))
-
-def state_safety(userid, yes):
-    with tbase:
-        tc.execute('UPDATE settings SET safety = ? WHERE userid = ?', (yes,userid,))
-
-def state_safetys(userid, no):
-    with tbase:
-        tc.execute('UPDATE settings SET safety = ? WHERE userid = ?', (no,userid,))
+async def state_0(userid,balance):
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('INSERT OR IGNORE INTO users(userid,balance) VALUES(?, ?)', (userid,balance,))
+        await tc.commit()
 
 
 
 
 
-def state_safets(date,safety_balance, userid):
-    with tbase:
-        tc.execute('UPDATE settings SET date = ?, safety_balance = ? WHERE userid = ?', (date,safety_balance,userid,))
 
-def state_565(balance,userid):
-    with tbase:
-        tc.execute('UPDATE users SET balance = balance + ? WHERE userid = ?', (balance,userid,))
-
-def state_55555(msgids,rands):
-    with tbase:
-        tc.execute('INSERT INTO targets(msgids,rands) VALUES(?, ?)', (msgids,rands,))
-
-def state_deletes(rands):
-    with tbase:
-        tc.execute('DELETE FROM targets WHERE msgids = ?', (rands,))
-
-def state_tryttttt(userid):
-    with tbase:
-        tc.execute('UPDATE users SET try_text_balance = try_text_balance - 1 WHERE userid = ?', (userid,))
-
-def state_tryttttt_(userid):
-    with tbase:
-        tc.execute('UPDATE users SET try_balance = try_balance - 1 WHERE userid = ?', (userid,))
+async def state_5(userid, scale, safety, safety_balance, date):
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('INSERT OR IGNORE INTO settings(userid, scale, safety, safety_balance, date) VALUES(?, ?, ?, ?, ?)', (userid,scale,safety,safety_balance,date,))
+        await tc.commit()
 
 
 
@@ -72,46 +35,138 @@ def state_tryttttt_(userid):
 
 
 
-def tests():
-    with tbase:
-        s = tc.execute('SELECT * FROM settings').fetchall()
-        print(s)
-
-def state_times(useri):
-    with tbase:
-        tc.execute('UPDATE users SET try_balance = 19 WHERE userid = ?', (useri,))
-
-def state_times_safety(useri):
-    with tbase:
-        tc.execute('UPDATE settings SET safety_balance = 0 WHERE userid = ?', (useri,))
 
 
-def state_nudify(useri):
-    with tbase:
-        tc.execute('UPDATE users SET nudify_content = 5 WHERE userid = ?', (useri,))
-
-def state_nudify_(useri):
-    with tbase:
-        tc.execute('UPDATE users SET nudify_content = nudify_content - 1 WHERE userid = ?', (useri,))
-
-def state_pic_balance(userid):
-    with tbase:
-        tc.execute('UPDATE users SET try_pic_balance = try_pic_balance - 1 WHERE userid = ?', (userid,))
+async def state_6(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('UPDATE settings SET scale = scale + 0.5 WHERE userid = ?', (userid,))
+        
+        await tc.commit()
 
 
 
 
 
-def state_balance_99(userid):
-    with tbase:
-        tc.execute('UPDATE users SET balance_99 = 0 WHERE userid = ?', (userid,))
+async def state_666(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE settings SET scale = scale - 0.5 WHERE userid = ?', (userid,))
+       await tc.commit()
+
+async def state_safety(userid, yes):
+    async with aiosqlite.connect('vis.db') as tc:
+        
+       await tc.execute('UPDATE settings SET safety = ? WHERE userid = ?', (yes,userid,))
+        
+       await tc.commit()
+
+async def state_safetys(userid, no):
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('UPDATE settings SET safety = ? WHERE userid = ?', (no,userid,))
+        await tc.commit()
 
 
 
 
 
 
+async def state_safets(date,safety_balance, userid):
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('UPDATE settings SET date = ?, safety_balance = ? WHERE userid = ?', (date,safety_balance,userid,))
+        await tc.commit()
 
-def state_15(userid):
-    with tbase:
-        tc.execute('UPDATE users SET try_balance = try_balance + 15 WHERE userid = ?', (userid,))
+
+async def state_565(balance,userid):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET balance = balance + ? WHERE userid = ?', (balance,userid,))
+       await tc.commit()
+
+async def state_55555(msgids,rands):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('INSERT INTO targets(msgids,rands) VALUES(?, ?)', (msgids,rands,))
+       await tc.commit()
+
+async def state_deletes(rands):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('DELETE FROM targets WHERE msgids = ?', (rands,))
+       await tc.commit()
+
+async def state_tryttttt(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET try_text_balance = try_text_balance - 1 WHERE userid = ?', (userid,))
+       await tc.commit()
+
+async def state_tryttttt_(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET try_balance = try_balance - 1 WHERE userid = ?', (userid,))
+       await tc.commit()
+
+
+
+
+
+
+
+
+
+async def state_times(useri):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET try_balance = 19 WHERE userid = ?', (useri,))
+       await tc.commit()
+    
+
+
+async def state_times_safety(useri):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE settings SET safety_balance = 0 WHERE userid = ?', (useri,))
+       await tc.commit()
+
+
+
+
+
+
+async def state_nudify(useri):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET nudify_content = 5 WHERE userid = ?', (useri,))
+       await tc.commit()
+
+async def state_nudify_(useri):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET nudify_content = nudify_content - 1 WHERE userid = ?', (useri,))
+       await tc.commit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+async def state_pic_balance(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET try_pic_balance = try_pic_balance - 1 WHERE userid = ?', (userid,))
+       await tc.commit()
+
+
+
+
+
+async def state_balance_99(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+       await tc.execute('UPDATE users SET balance_99 = 0 WHERE userid = ?', (userid,))
+       await tc.commit()
+
+
+
+
+
+
+
+async def state_15(userid):
+    async with aiosqlite.connect('vis.db') as tc:
+        await tc.execute('UPDATE users SET try_balance = try_balance + 15 WHERE userid = ?', (userid,))
