@@ -76,6 +76,7 @@ async def softs_5(init, promts, scale, safety):
         time.sleep(18)
         res_ = requests.post(f'{result.get("fetch_result")}',headers=headers, data=datas)
         res_5 = json.loads(res_.text)
+        print(res_5)
         return res_5.get('output')[0]
     elif result.get('status') == 'error':
         return None
@@ -146,6 +147,7 @@ async def softstexts(promts,safety,scale):
         time.sleep(18)
         res_ = requests.post(f'{result.get("fetch_result")}',headers=headers, data=datas)
         res_5 = json.loads(res_.text)
+        print(res_5)
         return res_5.get('output')[0]
     elif result.get('status') == 'error':
         

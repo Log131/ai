@@ -724,6 +724,7 @@ async def state_ads(msg: types.Message):
 async def state_spams(css: types.CallbackQuery, state: FSMContext):
     chat_admins = await bot.get_chat_member(chat_id=-1001980460031, user_id=css.from_user.id)
     if chat_admins.status == 'creator' or chat_admins.status == 'administrator':
+        await css.message.answer('Введите текст',reply_markup=otmena_555())
         await spams_states.spams_.set()
 
 @dp.message_handler(state=spams_states.spams_)
@@ -731,7 +732,6 @@ async def state_spams_(msg: types.Message, state: FSMContext):
     with tbase:
         s = tc.execute('SELECT userid FROM users').fetchall()
     await msg.delete()
-    await msg.answer('Введите текст',reply_markup=otmena_555())
     for i in s:
         try:
             await bot.send_message(chat_id=i[0], text=msg.text)
