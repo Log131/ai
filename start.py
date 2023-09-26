@@ -22,7 +22,7 @@ import random
 
 
 
-bot = Bot(token='6093970106:AAFugNzYa1SL0WTgReF4gHznIwqAF6tSRSY')
+bot = Bot(token='6573671049:AAEEjlb_kT9prPzOB35cGvl1dXo_JkRO_Vo')
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 @dp.message_handler(commands=['start'])
