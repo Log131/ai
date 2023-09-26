@@ -152,6 +152,11 @@ async def tudity_5(msg: types.Message, state: FSMContext):
         print(e)
         await state.finish()
 
+        await msg.answer('Ваш запрос в ожидании пожалуйста подождите')
+
+
+
+
 @dp.callback_query_handler(text='cansels', state=nudes_img_states.promts_0)
 async def tudity_cansel(css: types.CallbackQuery, state: FSMContext):
     await css.answer()
