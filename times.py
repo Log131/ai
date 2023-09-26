@@ -68,8 +68,9 @@ async def funcs_9():
                     await bot.send_photo(chat_id=i[0], photo=await softs_555(init=i[1]))
                     await tc.execute('DELETE FROM fetch WHERE fetches = ?', (i[1],))
                     await tc.commit()
-            except Exception as e:
-                await bot.send_message(chat_id=5954314568, text=f'{e} \n {i[1]}')
+            except:
+
+                pass
 
 
 def run_9():

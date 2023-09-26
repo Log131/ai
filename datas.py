@@ -1,12 +1,16 @@
 import aiosqlite
 
+from datas import *
+
 import asyncio
+
 
 async def state_tbase():
     async with aiosqlite.connect('vis.db') as tc:
-        await tc.execute('CREATE TABLE IF NOT EXISTS users(userid PRIMARY KEY,balance DEFAULT 0, try_text_balance DEFAULT 3,balance_99 DEFAULT 1, try_pic_balance DEFAULT 1,nudify_content DEFAULT 0, try_balance DEFAULT 0)')
+        await tc.execute('CREATE TABLE IF NOT EXISTS users(userid PRIMARY KEY,balance DEFAULT 0, try_text_balance DEFAULT 3,balance_99 DEFAULT 1, try_pic_balance DEFAULT 3,nudify_content DEFAULT 0, try_balance DEFAULT 0)')
         await tc.execute('CREATE TABLE IF NOT EXISTS targets(msgids,rands)')
         await tc.execute('CREATE TABLE IF NOT EXISTS settings(userid PRIMARY KEY,scale REAL DEFAULT 7.5,safety_balance INTEGER DEFAULT 0,date, safety)')
+        await tc.execute('CREATE TABLE IF NOT EXISTS fetch(userid, fetches)')
         await tc.commit()
 
 
@@ -170,3 +174,4 @@ async def state_balance_99(userid):
 async def state_15(userid):
     async with aiosqlite.connect('vis.db') as tc:
         await tc.execute('UPDATE users SET try_balance = try_balance + 15 WHERE userid = ?', (userid,))
+        await tc.commit()
