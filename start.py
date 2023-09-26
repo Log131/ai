@@ -241,14 +241,14 @@ async def state_picture(css: types.CallbackQuery, state: FSMContext):
             s_ = await s9.fetchone()
 
     if s[0] > 0:
-        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ Запрос пример(woman,smile,happy)',reply_markup=otmena_())
+        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ ВАШ ЗАПРОС (Для корректной работы бота, желательно использовать Английский язык) \n Пример(woman,smile,happy)',reply_markup=otmena_())
         await picture_states.promts_5.set()
     elif s[0] > 0 and s_[0] != 0:
-        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ Запрос пример(woman,smile,happy)',reply_markup=otmena_())
+        await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ ВАШ ЗАПРОС (Для корректной работы бота, желательно использовать Английский язык) \n Пример(woman,smile,happy)',reply_markup=otmena_())
         await picture_states.promts_5.set()
     else:
         if s_texts[0] != 0:
-            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ Запрос пример(woman,smile,happy)',reply_markup=otmena_())
+            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/side/AI-generate-different-characters-in-Fotor-text-to-image-AI.png', caption='ВВЕДИТЕ ВАШ ЗАПРОС (Для корректной работы бота, желательно использовать Английский язык) \n Пример(woman,smile,happy)',reply_markup=otmena_())
             await picture_states.promts_5.set()
         else:
             await css.message.answer('Слишком много запросов попробуйте чуть позже 🙃')
@@ -284,7 +284,8 @@ async def state_picture_5(msg: types.Message, state: FSMContext):
             
             
             await state.finish()
-            await msg.answer_photo(photo=await softstexts(promts=msg.text,safety=safetys[0], scale=scales[0]),reply_markup=wel_5())
+            await msg.answer_photo(photo=await softstexts(promts=msg.text,safety=safetys[0], scale=scales[0]))
+            await msg.answer('Еще сгенерировать?', reply_markup=wel_5())
             if s_[0] != 0:
                 await state_tryttttt(userid=msg.from_user.id)
             elif s[0] != 0 and s_[0] == 0:
@@ -318,16 +319,16 @@ async def state_content(css: types.CallbackQuery, state: FSMContext):
             async with tc.execute('SELECT safety_balance FROM settings WHERE userid = ?', (css.from_user.id,)) as r_5:
                 s_ = await r_5.fetchone()
         if s[0] > 0:
-            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ Запрос пример(woman,smile,happy)', reply_markup=otmena())
+            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ ВАШ ЗАПРОС (Для корректной работы бота, желательно использовать Английский язык) \n Пример(woman,smile,happy)', reply_markup=otmena())
             
             await photo_states.promts_.set()
         elif s[0] > 0 and s_[0] != 0:
-            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ Запрос пример(woman,smile,happy)', reply_markup=otmena())
+            await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ ВАШ ЗАПРОС (Для корректной работы бота, желательно использовать Английский язык) \n Пример(woman,smile,happy)', reply_markup=otmena())
             
             await photo_states.promts_.set()
         else:
             if s_555[0] != 0:
-                await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ Запрос пример(woman,smile,happy)', reply_markup=otmena())
+                await css.message.answer_photo(photo='https://imgv3.fotor.com/images/videoImage/apply-the-two-cartoon-art-effects-to-the-female-portarit-to-turn-photo-to-art-in-fotor.jpg', caption='Меняйте ваши фото как вам угодно ! \n \n \n ВВЕДИТЕ ВАШ ЗАПРОС (Для корректной работы бота, желательно использовать Английский язык) \n Пример(woman,smile,happy)', reply_markup=otmena())
             
                 await photo_states.promts_.set()
             else:
@@ -412,7 +413,8 @@ async def state_get_5(msg: types.Message, state: FSMContext):
         
                 await state.finish()
                 
-                await msg.answer_photo(await softs_5(init=inits, promts=data['promts_'], scale=scales[0], safety=s_5[0]),reply_markup=wel_5())
+                await msg.answer_photo(await softs_5(init=inits, promts=data['promts_'], scale=scales[0], safety=s_5[0]))
+                await msg.answer('Еще сгенерировать?', reply_markup=wel_5())
                 
                 
                 
