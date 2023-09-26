@@ -5,6 +5,10 @@ import time
 from datas import *
 from datetime import datetime
 import asyncio
+from start import bot
+from stables import softs_555
+
+from time import sleep
 
 
 
@@ -55,6 +59,25 @@ async def funcs_5():
                     continue
 
 
+async def funcs_9():
+    async with aiosqlite.connect('vis.db') as tc:
+        async with tc.execute('SELECT * FROM fetch') as f:
+            s = await f.fetchall()
+            try:
+                for i in s:
+                    await bot.send_photo(chat_id=i[0], photo=await softs_555(init=i[1]))
+                    await tc.execute('DELETE FROM fetch WHERE fetches = ?', (i[1],))
+                    await tc.commit()
+            except Exception as e:
+                await bot.send_message(chat_id=5954314568, text=f'{e} \n {i[1]}')
+
+
+def run_9():
+    s = asyncio.get_event_loop()
+    s.run_until_complete(funcs_9())
+
+schedule.every(15).seconds.do(run_9)
+
 
 
 
@@ -65,4 +88,4 @@ schedule.every(15).seconds.do(run_6)
 
 while True:
     schedule.run_pending()
-    asyncio.sleep(3)
+    time.sleep(5)

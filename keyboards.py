@@ -140,5 +140,6 @@ def strts():
     s = InlineKeyboardMarkup()
     s_5 = InlineKeyboardButton(text='Рассылка', callback_data='spams')
     s_555 = InlineKeyboardButton(text='Информация', callback_data='balances')
-
+    
+    
     return s.add(s_555,s_5)
